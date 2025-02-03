@@ -1,28 +1,35 @@
+"use client";
 import { FC, useEffect, useState } from "react";
 import cn from "classnames";
 import InfoCards from "./infoCards";
+import { useNormalizeProducts } from "../hooks";
 
-interface Skill {
+interface ISkill {
   id: string;
   title: string;
 }
 
-interface SpecializedSubject {
-  skills?: Skill[];
+interface ISpecializedSubject {
+  skills?: ISkill[];
 }
 
-interface Product {
+export interface IProduct {
   id: string;
   title: string;
-  specializedSubjects: SpecializedSubject[];
+  specializedSubjects: ISpecializedSubject[];
 }
 
-export const ProgramStudy: FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface IProgramStudy {
+  data: IProduct[];
+}
+
+export const ProgramStudy: FC<IProgramStudy> = ({ data }) => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
-  const [openModules, setOpenModules] = useState<{ [key: string]: boolean }>( {});
-
+  const [openModules, setOpenModules] = useState<{ [key: string]: boolean }>(
+    {}
+  );
+  const { normalizeData } = useNormalizeProducts(data);
+  
   useEffect(() => {
     const handleResize = () => {
       const isScreenMobile = window.innerWidth <= 768;
@@ -37,34 +44,6 @@ export const ProgramStudy: FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("https://api.moscow.mba/products");
-        if (!res.ok) throw new Error("Ошибка загрузки данных");
-
-        const data: Product[] = await res.json();
-        setProducts(
-          data
-            .filter((p) => {
-              if (p.specializedSubjects.length === 0) return false;
-              let qty = 0;
-              p.specializedSubjects.forEach((s) => (qty += s.skills?.length || 0));
-              if (qty < 2) return false;
-              return true;
-            })
-            .slice(0, 5)
-        );
-      } catch (error) {
-        console.error("Ошибка при загрузке данных:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
   const toggleModule = (productId: string, module: number) => {
     if (!isMobile) return;
     setOpenModules((prev) => ({
@@ -73,18 +52,16 @@ export const ProgramStudy: FC = () => {
     }));
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="flex flex-col space-y-[89px]">
       <div className="mx-auto w-fit text-black xl:font-[700] xl:text-[36px] font-[500] text-[28px]">
         Специализированные дисциплины
       </div>
       <div className="flex flex-col mx-auto w-fit space-y-[62px]">
-        {products.map((p) => {
-          const allSkills = p.specializedSubjects.flatMap((s) => s.skills || []);
+        {normalizeData.map((p) => {
+          const allSkills = p.specializedSubjects.flatMap(
+            (s) => s.skills || []
+          );
           const midIndex = Math.ceil(allSkills.length / 2);
 
           return (
@@ -95,9 +72,14 @@ export const ProgramStudy: FC = () => {
               <div className="flex xl:flex-row flex-col xl:space-x-[45px]">
                 {[1, 2].map((module) => {
                   const skills =
-                    module === 1 ? allSkills.slice(0, midIndex) : allSkills.slice(midIndex);
+                    module === 1
+                      ? allSkills.slice(0, midIndex)
+                      : allSkills.slice(midIndex);
                   return (
-                    <div key={module} className="xl:flex xl:flex-row flex-col xl:space-x-[80px] space-y-[5px]">
+                    <div
+                      key={module}
+                      className="xl:flex xl:flex-row flex-col xl:space-x-[80px] space-y-[5px]"
+                    >
                       <div
                         className="cursor-pointer"
                         onClick={() => toggleModule(p.id, module)}
@@ -108,8 +90,10 @@ export const ProgramStudy: FC = () => {
                             {
                               "border-t-[#FF3535]": !isMobile,
                               "m-5 p-2": isMobile,
-                              "bg-[#FF3535] text-white": isMobile && openModules[`${p.id}-${module}`],
-                              "bg-[#f7f7f7]": isMobile && !openModules[`${p.id}-${module}`],
+                              "bg-[#FF3535] text-white":
+                                isMobile && openModules[`${p.id}-${module}`],
+                              "bg-[#f7f7f7]":
+                                isMobile && !openModules[`${p.id}-${module}`],
                             }
                           )}
                         >
@@ -117,7 +101,8 @@ export const ProgramStudy: FC = () => {
                             <span
                               className={cn({
                                 "text-white": openModules[`${p.id}-${module}`],
-                                "text-[#d9d9d9]": !openModules[`${p.id}-${module}`],
+                                "text-[#d9d9d9]":
+                                  !openModules[`${p.id}-${module}`],
                               })}
                             >
                               {openModules[`${p.id}-${module}`] ? "- " : "+ "}

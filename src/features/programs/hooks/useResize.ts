@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 export const useResize = () => {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleResize = () => {
-      const isScreenMobile = window.innerWidth <= 768;
-      setIsMobile(isScreenMobile);
+      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener("resize", handleResize);

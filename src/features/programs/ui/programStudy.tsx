@@ -21,7 +21,6 @@ export const ProgramStudy: FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
-
   const [openModules, setOpenModules] = useState<{ [key: string]: boolean }>(
     {}
   );
@@ -29,10 +28,7 @@ export const ProgramStudy: FC = () => {
   useEffect(() => {
     const handleResize = () => {
       const isScreenMobile = window.innerWidth <= 768;
-      setIsMobile((prev) => {
-        if (prev !== isScreenMobile) return isScreenMobile;
-        return prev;
-      });
+      setIsMobile(isScreenMobile);
 
       if (!isScreenMobile) {
         setOpenModules({});

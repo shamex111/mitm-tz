@@ -1,4 +1,4 @@
-import { IProduct } from "../ui";
+import { IProduct } from "@/shared/types";
 
 export const useNormalizeProducts = (data: IProduct[]) => {
   const normalizeData = data

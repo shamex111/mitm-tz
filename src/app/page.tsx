@@ -1,4 +1,5 @@
-import { IProduct, ProgramStudy } from "@/features/programs/ui";
+import { ProgramStudy } from "@/features/programs/ui";
+import { IProduct } from "@/shared/types";
 
 export default async function Home() {
   try {
@@ -6,6 +7,10 @@ export default async function Home() {
     if (!res.ok) throw new Error("Ошибка загрузки данных");
 
     const data: IProduct[] = await res.json();
+    if (!data || data.length === 0) {
+      return <div className="text-center">К сожалению, у нас отсутствуют данные</div>;
+    }
+
     return <ProgramStudy data={data} />;
   } catch (error) {
     console.error(error);

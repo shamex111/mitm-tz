@@ -1,49 +1,22 @@
 "use client";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import cn from "classnames";
 import InfoCards from "./infoCards";
 import { useNormalizeProducts } from "../hooks";
-
-interface ISkill {
-  id: string;
-  title: string;
-}
-
-interface ISpecializedSubject {
-  skills?: ISkill[];
-}
-
-export interface IProduct {
-  id: string;
-  title: string;
-  specializedSubjects: ISpecializedSubject[];
-}
+import { useResize } from "../hooks/useResize";
+import { IProduct, ISkill, ISpecializedSubject } from "@/shared/types";
 
 interface IProgramStudy {
   data: IProduct[];
 }
 
 export const ProgramStudy: FC<IProgramStudy> = ({ data }) => {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
   const [openModules, setOpenModules] = useState<{ [key: string]: boolean }>(
     {}
   );
   const { normalizeData } = useNormalizeProducts(data);
-  
-  useEffect(() => {
-    const handleResize = () => {
-      const isScreenMobile = window.innerWidth <= 768;
-      setIsMobile(isScreenMobile);
 
-      if (!isScreenMobile) {
-        setOpenModules({});
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+  const { isMobile } = useResize();
   const toggleModule = (productId: string, module: number) => {
     if (!isMobile) return;
     setOpenModules((prev) => ({
@@ -60,7 +33,7 @@ export const ProgramStudy: FC<IProgramStudy> = ({ data }) => {
       <div className="flex flex-col mx-auto w-fit space-y-[62px]">
         {normalizeData.map((p) => {
           const allSkills = p.specializedSubjects.flatMap(
-            (s) => s.skills || []
+            (s: ISpecializedSubject) => s.skills || []
           );
           const midIndex = Math.ceil(allSkills.length / 2);
 
@@ -113,14 +86,10 @@ export const ProgramStudy: FC<IProgramStudy> = ({ data }) => {
                       </div>
                       {(openModules[`${p.id}-${module}`] || !isMobile) && (
                         <ul className="flex flex-col w-[373px] my-[10px]">
-                          {skills.map((skill) => (
+                          {skills.map((skill: ISkill) => (
                             <li
                               key={skill.id}
-                              className="ml-10"
-                              style={{
-                                listStyleType: "disc",
-                                color: "#FF3535",
-                              }}
+                              className="ml-10 list-disc text-[#FF3535]"
                             >
                               <div className="text-black">{skill.title}</div>
                             </li>
